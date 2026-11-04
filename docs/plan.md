@@ -11,7 +11,7 @@
 - [x] Памятка агента и журнал
 - [x] Первый запуск `make up`
 - [x] Laravel, Octane, Sanctum
-- [ ] MCP к Postgres
+- [x] MCP к Postgres
 - [ ] Пользователь, заказ, строки, API
 - [ ] Плохой SQL и индекс
 - [ ] Redis
@@ -121,7 +121,7 @@ docker compose exec app composer create-project laravel/laravel:^13.0 /tmp/larav
 
 ### 3. MCP к Postgres
 
-Я дописываю `.cursor/mcp.json`. Ты включаешь сервер в настройках Cursor и пишешь мне «MCP включён».
+Файл `.cursor/mcp.json` запускает `@microsoft/postgres-mcp`. Пароль в файл не пишется: профиль `orders` создаёшь ты, пароль уходит в связку ключей. Потом включаешь сервер в настройках Cursor и пишешь мне «MCP включён».
 
 Я спрашиваю у Postgres список баз. Ты по ответу видишь, что агент ходит в локальную БД сам. Пароль в журнал и в чат не попадает.
 

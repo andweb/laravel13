@@ -10,6 +10,7 @@
 /.codex
 /.cursor/*
 !/.cursor/rules/
+!/.cursor/mcp.json
 /.idea
 /.nova
 /.phpunit.cache

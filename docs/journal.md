@@ -49,5 +49,14 @@
 - `install:api --without-migration-prompt` прошёл: пакет `laravel/sanctum`, миграция `personal_access_tokens`, `routes/api.php`, api-маршруты в `bootstrap/app.php`. На `User` добавлен трейт `HasApiTokens`.
 - `make migrate` прошёл. `octane:reload` в `storage/logs/swoole_http.log` отметил перезагрузку воркеров и сразу пачку SIGPIPE (broken pipe, сигнал 13) без обработчика. Контейнер `app` после этого не запущен: его главный процесс — `octane:start`, политики `restart` в compose нет. `composer require` из-за этого получил `service "app" is not running`.
 - `app` поднят через `docker compose up -d app`. `spatie/laravel-model-states` ^2.14 встал. Дальше `make:model` для `Order` и `OrderLine`, команды ещё не запускали.
+- Команды в чате пока пишем как `docker compose exec -T app php artisan ...`, без цели Make. Makefile остаётся.
+- `make:model` для `Order` и `OrderLine` прошёл. Artisan создал пустые классы и миграции с `id` и `timestamps`. В миграции дописаны `user_id`, `status`, `total` и строки `order_id`, `name`, `quantity`. Связи: `User` hasMany `Order`, `Order` hasMany `OrderLine`. `migrate` ещё не запускали.
+
+## 2026-11-04 22:30
+
+- Миграции `orders` и `order_lines` прошли, таблицы видны в базе.
+- В `.cursor/mcp.json` сервер `@microsoft/postgres-mcp`. Пароля в файле нет: его кладёт в связку ключей команда `connection set-password`.
+- Сервер в Cursor включён, профиль `orders` находится. Первое подключение отказало: пароль пользователя `lab` не совпал. После `set-password` подключение к `test_laravel` прошло. Видны базы `postgres` и `test_laravel`, в публичной схеме есть `users`, `orders`, `order_lines`, `personal_access_tokens`.
+- Дальше заготовки API: контроллер, два Form Request, ресурс, политика и сидер. Команды ещё не запускали.
 
 
