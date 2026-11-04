@@ -4,13 +4,13 @@
 
 ## Где мы
 
-Сделано: этот план, [journal.md](journal.md), [AGENTS.md](../AGENTS.md), [deploy/docker/dev/php/Dockerfile](../deploy/docker/dev/php/Dockerfile), [README.md](../README.md), [.gitignore](../.gitignore), [Makefile](../Makefile), [docker-compose.yml](../docker-compose.yml). Образ не собирался, команды не запускались.
+Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту 8000, миграции каркаса, Sanctum (`personal_access_tokens`, трейт `HasApiTokens`). Дальше пакет состояний, затем заказ.
 
 Образы для dev лежат в `deploy/docker/dev/<сервис>`. PHP — в `deploy/docker/dev/php`. Compose один, в корне репозитория, и ссылается на эти Dockerfile. Прод и другие окружения сюда не мешаем.
 
 - [x] Памятка агента и журнал
 - [x] Первый запуск `make up`
-- [ ] Laravel, Octane, Sanctum
+- [x] Laravel, Octane, Sanctum
 - [ ] MCP к Postgres
 - [ ] Пользователь, заказ, строки, API
 - [ ] Плохой SQL и индекс

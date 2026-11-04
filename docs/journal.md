@@ -41,6 +41,12 @@
 - Контейнер `app` пересоздан не от root. `composer require laravel/octane` прошёл, повторный `chown` не понадобился.
 - `octane:install --server=swoole` прошёл. В compose команда контейнера заменена на `octane:start --host=0.0.0.0 --port=8000`. Прежняя `sleep infinity` осталась комментарием в compose и абзацем в README.
 - Образ пересобран с `pcntl`. `curl` вернул `500`: Swoole жив, Postgres отвечает, таблицы `sessions` нет. Сессии в Laravel 13 по умолчанию в базе.
-- `make migrate` прошёл: штатные таблицы каркаса созданы. `curl` на `http://127.0.0.1:8000` вернул `200`. Дальше Sanctum через `make artisan cmd="install:api --without-migration-prompt"`. Команду ещё не запускали.
+- `make migrate` прошёл: штатные таблицы каркаса созданы. `curl` на `http://127.0.0.1:8000` вернул `200`. Репозиторий можно публиковать: секретов в документации нет.
+- Дальше Sanctum: `make artisan cmd="install:api --without-migration-prompt"`. Команду ещё не запускали.
+
+## 2026-11-04 22:00
+
+- `install:api --without-migration-prompt` прошёл: пакет `laravel/sanctum`, миграция `personal_access_tokens`, `routes/api.php`, api-маршруты в `bootstrap/app.php`. На `User` добавлен трейт `HasApiTokens`.
+- `make migrate` и `octane:reload` прошли. Дальше пакет `spatie/laravel-model-states`, команду ещё не запускали.
 
 
