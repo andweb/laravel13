@@ -64,5 +64,12 @@
 - `make:controller`, `make:resource`, `make:policy`, `make:seeder` прошли. Заполнены состояния Spatie (`draft` → `awaiting_payment` → `paid` → `shipped`, отмена из ранних, возврат из `paid` через `REFUNDS_ENABLED`), Policy владельца, создание заказа со строками, смена статуса в транзакции с `lockForUpdate`, маршруты `auth:sanctum`. Сидер пользователей Anna и Andrey ещё не запускали.
 - Договор: новый ключ в `.env.example` агент сразу называет, пользователь сам дописывает его в `.env`. Для `REFUNDS_ENABLED=false` это было сказано с опозданием.
 - В `.env.example` добавлен `OCTANE_SERVER=swoole`. У пользователя ключ уже был. Без него `config/octane.php` берёт `roadrunner`. В `.env` ничего менять не нужно.
+- Сидер прошёл: в `users` две строки, Anna `anna@example.com` и Andrey `andrey@example.com`. Токены ещё не выпускали.
+
+## 2026-11-04 23:30
+
+- `POST /api/orders` из Postman вернул `500`: `authorizeResource()` в конструкторе зовёт `middleware()`, а базовый контроллер Laravel 13 этот метод не содержит. Вызов убран. `index` и `show` вызывают `authorize()` сами, `store` и `update` по-прежнему через Form Request.
+- После перезапуска `app` создание заказа, список и просмотр своего заказа из Postman проходят. Незаконный переход статуса отвечает `422` и текстом `This status transition is not allowed.`
+- Остановка на сегодня. Следующий шаг: `EXPLAIN` фильтра заказов по статусу, затем тысячи строк и индекс. В план записано в разделе «Где мы».
 
 

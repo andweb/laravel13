@@ -4,15 +4,15 @@
 
 ## Где мы
 
-Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту 8000, миграции каркаса, Sanctum (`personal_access_tokens`, трейт `HasApiTokens`). Дальше пакет состояний, затем заказ.
+Остановка 2026-11-04. API заказа работает из Postman: создание, список своих, просмотр своего, незаконный переход статуса отвечает `422`. Дальше снять `EXPLAIN` фильтра по статусу. На одном заказе план будет последовательным чтением, потом нужны тысячи строк и индекс.
 
-Образы для dev лежат в `deploy/docker/dev/<сервис>`. PHP — в `deploy/docker/dev/php`. Compose один, в корне репозитория, и ссылается на эти Dockerfile. Прод и другие окружения сюда не мешаем.
+Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту `8000`, Sanctum, MCP Postgres (профиль `orders`, база `test_laravel`), модели `Order` и `OrderLine`, состояния Spatie, Policy владельца, сидер Anna и Andrey. Токен для Postman выпускается через `tinker`, отдельного маршрута входа нет. В `.env.example` есть `OCTANE_SERVER=swoole` и `REFUNDS_ENABLED=false`. Команды в чате пишем как `docker compose exec`, не через Make. `octane:reload` не используем: один раз он убил мастер Swoole. Код подхватывает `docker compose restart app`.
 
 - [x] Памятка агента и журнал
 - [x] Первый запуск `make up`
 - [x] Laravel, Octane, Sanctum
 - [x] MCP к Postgres
-- [ ] Пользователь, заказ, строки, API
+- [x] Пользователь, заказ, строки, API
 - [ ] Плохой SQL и индекс
 - [ ] Redis
 - [ ] Kafka

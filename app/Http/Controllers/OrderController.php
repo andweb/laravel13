@@ -15,13 +15,10 @@ class OrderController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(Order::class, 'order');
-    }
-
     public function index(): AnonymousResourceCollection
     {
+        $this->authorize('viewAny', Order::class);
+
         $orders = request()->user()
             ->orders()
             ->with(['user', 'lines'])
@@ -50,6 +47,8 @@ class OrderController extends Controller
 
     public function show(Order $order): OrderResource
     {
+        $this->authorize('view', $order);
+
         return new OrderResource($order->load(['user', 'lines']));
     }
 
