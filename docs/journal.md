@@ -20,3 +20,13 @@
 - Запуск не делали. Следующее действие пользователя — `make up`.
 - Пароль базы убран из compose и README. Compose берёт `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` из `.env`. Пример без значений — `.env.example`. Файл `.env` пользователь создаёт сам.
 - `.env` закрыт от агента: `.cursorignore` и правило `.cursor/rules/no-secrets.mdc`. `.env.example` читается.
+- Первый `make up` оборвался на скачивании образов. Сертификат на соединении с `registry-1.docker.io` выписан на `*.allureagro.com.br`, не на Docker Hub. Образы `postgres`, `redis`, `kafka`, `clickhouse` локально так и не появились. К compose это не относится.
+- С оболочки `openssl` к тому же реестру получает нормальный сертификат `*.docker.com` (Amazon). Расходятся путь демона Docker и путь обычной команды.
+- `daemon.json` нет, в `docker info` нет proxy и registry mirror. `EnableUserlandProxy` к реестру не относится.
+- Повторный `make up` прошёл. Живы `orders-app` (sleep), `orders-postgres` (healthy), `orders-redis`, `orders-kafka` (healthy), `orders-clickhouse` (healthy). Порт 8000 открыт, слушать его некому.
+- Команда установки Laravel 13 записана в README и в план: `composer create-project` в `/tmp/laravel` внутри `app`. В git каркаса ещё нет. `/tmp` не на томе, после установки сразу переносим в корень.
+
+## 2026-11-04 21:00
+
+- `create-project` — только скачивание во временный каталог. Каркас приложения собираем в этом же репозитории позже, отдельный репозиторий под него не заводим.
+

@@ -9,7 +9,7 @@
 Образы для dev лежат в `deploy/docker/dev/<сервис>`. PHP — в `deploy/docker/dev/php`. Compose один, в корне репозитория, и ссылается на эти Dockerfile. Прод и другие окружения сюда не мешаем.
 
 - [x] Памятка агента и журнал
-- [ ] Первый запуск `make up`
+- [x] Первый запуск `make up`
 - [ ] Laravel, Octane, Sanctum
 - [ ] MCP к Postgres
 - [ ] Пользователь, заказ, строки, API
@@ -109,7 +109,13 @@ Dockerfile PHP лежит в `deploy/docker/dev/php`. Корневой `docker-c
 
 Я даю команды по одной. Ты выполняешь их в контейнере `app` и смотришь вывод.
 
-Порядок: создать проект Laravel 13 в текущий каталог, поставить Octane, Sanctum и Spatie model states, `octane:install` с сервером Swoole, прописать в `.env` хосты Postgres и Redis (имена сервисов compose, не localhost). Файл `.env` ты правишь сам.
+Первая команда, контейнер `app` уже запущен. Корень репозитория не пустой, поэтому каркас собирается во временный каталог. В git он попадёт только после переноса в корень и настройки. `/tmp` внутри контейнера не на томе: `make down` или пересоздание `app` его сотрёт, поэтому переносим сразу после успешной установки.
+
+```bash
+docker compose exec app composer create-project laravel/laravel:^13.0 /tmp/laravel --no-interaction
+```
+
+Дальше, когда установка пройдёт: перенос в корень без затирания `.env`, `docs` и `deploy`, затем Octane, Sanctum и Spatie model states, `octane:install` с сервером Swoole, в `.env` хосты Postgres и Redis (имена сервисов compose, не localhost). Файл `.env` ты правишь сам. Этот настроенный каркас и есть коммит каркаса приложения.
 
 Трабл: `composer create-project` в непустой каталог ругается на `.idea` и наши md-файлы. Обойдём флагом или временным каталогом, это разберём на месте, не заранее пачкой команд. Второй трабл: Octane не видит расширение Swoole, если Artisan запущен не в том контейнере.
 

@@ -32,6 +32,16 @@ make test
 
 `make test` заработает после установки Laravel. Тесты — штатный `php artisan test` (Pest или PHPUnit, как поставит каркас).
 
+## Поставить Laravel
+
+Каталог репозитория уже занят, поэтому каркас сначала собирается во временный каталог контейнера. Это ещё не файлы приложения в git: `/tmp` пропадёт, если контейнер пересоздать. После установки напиши в чат, перенесём каркас в корень и настроим.
+
+Контейнер `app` должен быть запущен (`make up`).
+
+```bash
+docker compose exec app composer create-project laravel/laravel:^13.0 /tmp/laravel --no-interaction
+```
+
 ## Что не коммитить
 
 `.env`, `vendor` и ключи из `storage` закрыты `.gitignore`. Пароли и токены в чат и в `docs/journal.md` не кладём. `.env.example` без значений — можно.
