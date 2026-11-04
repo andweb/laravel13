@@ -59,4 +59,10 @@
 - Сервер в Cursor включён, профиль `orders` находится. Первое подключение отказало: пароль пользователя `lab` не совпал. После `set-password` подключение к `test_laravel` прошло. Видны базы `postgres` и `test_laravel`, в публичной схеме есть `users`, `orders`, `order_lines`, `personal_access_tokens`.
 - Дальше заготовки API: контроллер, два Form Request, ресурс, политика и сидер. Команды ещё не запускали.
 
+## 2026-11-04 23:00
+
+- `make:controller`, `make:resource`, `make:policy`, `make:seeder` прошли. Заполнены состояния Spatie (`draft` → `awaiting_payment` → `paid` → `shipped`, отмена из ранних, возврат из `paid` через `REFUNDS_ENABLED`), Policy владельца, создание заказа со строками, смена статуса в транзакции с `lockForUpdate`, маршруты `auth:sanctum`. Сидер пользователей Anna и Andrey ещё не запускали.
+- Договор: новый ключ в `.env.example` агент сразу называет, пользователь сам дописывает его в `.env`. Для `REFUNDS_ENABLED=false` это было сказано с опозданием.
+- В `.env.example` добавлен `OCTANE_SERVER=swoole`. У пользователя ключ уже был. Без него `config/octane.php` берёт `roadrunner`. В `.env` ничего менять не нужно.
+
 
