@@ -47,6 +47,7 @@
 ## 2026-11-04 22:00
 
 - `install:api --without-migration-prompt` прошёл: пакет `laravel/sanctum`, миграция `personal_access_tokens`, `routes/api.php`, api-маршруты в `bootstrap/app.php`. На `User` добавлен трейт `HasApiTokens`.
-- `make migrate` и `octane:reload` прошли. Дальше пакет `spatie/laravel-model-states`, команду ещё не запускали.
+- `make migrate` прошёл. `octane:reload` в `storage/logs/swoole_http.log` отметил перезагрузку воркеров и сразу пачку SIGPIPE (broken pipe, сигнал 13) без обработчика. Контейнер `app` после этого не запущен: его главный процесс — `octane:start`, политики `restart` в compose нет. `composer require` из-за этого получил `service "app" is not running`.
+- `app` поднят через `docker compose up -d app`. `spatie/laravel-model-states` ^2.14 встал. Дальше `make:model` для `Order` и `OrderLine`, команды ещё не запускали.
 
 
