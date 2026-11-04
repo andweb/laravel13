@@ -42,6 +42,16 @@ make test
 docker compose exec app composer create-project laravel/laravel:^13.0 /tmp/laravel --no-interaction
 ```
 
+## Ключ приложения
+
+`APP_KEY` генерирует Artisan внутри уже запущенного контейнера и сам дописывает его в `.env`. Команда `docker exec`, без флага `-T`: у этого клиента такого флага нет.
+
+```bash
+docker exec orders-app php artisan key:generate
+```
+
+В терминале остаётся строка «Application key set successfully». Сам ключ не печатается и в чат его не копируют. Повторный запуск затирает старый ключ новым.
+
 ## Что не коммитить
 
 `.env`, `vendor` и ключи из `storage` закрыты `.gitignore`. Пароли и токены в чат и в `docs/journal.md` не кладём. `.env.example` без значений — можно.
