@@ -6,17 +6,21 @@
 
 ## Как запускать
 
-Нужны Docker и Make. Compose-файл появится в корне, образ PHP лежит в `deploy/docker/dev/php`.
+Нужны Docker и Make. Образ PHP лежит в `deploy/docker/dev/php`, остальные сервисы — готовые образы в `docker-compose.yml`.
 
 ```bash
 make up       # собрать и поднять
-make down     # остановить
+make down     # остановить, тома с данными остаются
 make logs     # логи
 make ps       # статус
 make shell    # оболочка контейнера app
 ```
 
-Пока `docker-compose.yml` нет, `make up` завершится ошибкой. Это ожидаемо.
+Первый `make up` долго собирает `rdkafka`. Контейнер `app` пока только спит: Laravel ещё нет, порт 8000 наружу открыт, но слушать его некому. Octane включим отдельной командой позже.
+
+Перед первым запуском скопируй `.env.example` в `.env` и впиши имя базы, пользователя и пароль. Без этого `make up` остановится сам: Compose не подставляет пустой пароль. Файл `.env` не коммитится.
+
+С хоста: Postgres `localhost:5432`, Redis `localhost:6379`, Kafka `localhost:9092`, ClickHouse `http://localhost:8123`. Из контейнера `app` брокер другой: `kafka:19092`.
 
 Artisan и Composer тоже через Make, аргумент в `cmd`:
 

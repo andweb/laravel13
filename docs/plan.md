@@ -4,14 +4,12 @@
 
 ## Где мы
 
-Сделано: этот план, [journal.md](journal.md), [AGENTS.md](../AGENTS.md), [deploy/docker/dev/php/Dockerfile](../deploy/docker/dev/php/Dockerfile), [README.md](../README.md), [.gitignore](../.gitignore), [Makefile](../Makefile), [.editorconfig](../.editorconfig), [.gitattributes](../.gitattributes).
-
-Дальше: корневой `docker-compose.yml`. Его ещё нет. Образ не собирался, команды не запускались.
+Сделано: этот план, [journal.md](journal.md), [AGENTS.md](../AGENTS.md), [deploy/docker/dev/php/Dockerfile](../deploy/docker/dev/php/Dockerfile), [README.md](../README.md), [.gitignore](../.gitignore), [Makefile](../Makefile), [docker-compose.yml](../docker-compose.yml). Образ не собирался, команды не запускались.
 
 Образы для dev лежат в `deploy/docker/dev/<сервис>`. PHP — в `deploy/docker/dev/php`. Compose один, в корне репозитория, и ссылается на эти Dockerfile. Прод и другие окружения сюда не мешаем.
 
 - [x] Памятка агента и журнал
-- [ ] Compose и первый запуск
+- [ ] Первый запуск `make up`
 - [ ] Laravel, Octane, Sanctum
 - [ ] MCP к Postgres
 - [ ] Пользователь, заказ, строки, API
@@ -101,9 +99,9 @@ flowchart LR
 
 ### 1. Docker
 
-Dockerfile PHP лежит в `deploy/docker/dev/php`: PHP 8.5, Swoole 6.2, `pdo_pgsql`, `redis`, `rdkafka`, OPcache для CLI. Корневой `docker-compose.yml` ещё пишем отдельно, до него образ не запускаем. Сборка пойдёт с `dockerfile: deploy/docker/dev/php/Dockerfile`.
+Dockerfile PHP лежит в `deploy/docker/dev/php`. Корневой `docker-compose.yml` поднимает `app`, Postgres 16, Redis 7, Kafka KRaft и ClickHouse. Таблица `app_logs` создаётся `deploy/docker/dev/clickhouse/init.sql` при пустом томе.
 
-Дальше ты запускаешь `make up` и присылаешь в чат только факт: поднялось или текст ошибки. Пароли из вывода вырежи. Остановка — `make down`. Оболочка контейнера — `make shell`. Artisan — `make artisan cmd=...`.
+Дальше ты запускаешь `make up` и присылаешь в чат только факт: поднялось или текст ошибки. Пароли из вывода вырежи. Остановка — `make down`. Оболочка контейнера — `make shell`.
 
 Трабл: сборка `rdkafka` долгая, это не зависание. Частая ошибка — порт 5432 или 9092 уже занят на машине. Тогда останавливаемся и меняем проброс порта, а не угадываем процесс. `pecl install rdkafka` может не найти заголовки, если пакет `librdkafka-dev` не встал.
 

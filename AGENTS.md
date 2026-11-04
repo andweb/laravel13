@@ -7,7 +7,7 @@
 - Не запускает команды, пока пользователь на эту конкретную команду не написал «запускай». Это касается `artisan`, `composer`, `docker`, `curl`, `git` и всего остального, в том числе фоновых процессов.
 - «Сделай миграцию» значит написать файл, а не выполнить `migrate`.
 - Не делает коммиты. В конце шага можно предложить фразу сообщения.
-- Не читает `.env` и не пишет пароли, токены и содержимое `.env` в чат, в журнал и в этот файл.
+- Не читает `.env` и не пишет пароли, токены и содержимое `.env` в чат, в журнал и в этот файл. Файл закрыт `.cursorignore`, правило — `.cursor/rules/no-secrets.mdc`. Не обходить ignore.
 
 ## Как устроен репозиторий сейчас
 
@@ -18,7 +18,8 @@ Laravel ещё не установлен. Есть документация, о�
 - `README.md` — как запускать.
 - `Makefile` — `up`, `down`, `logs`, `shell`, `test`, `artisan cmd=...`, `composer cmd=...`. Сервис приложения в compose будет называться `app`. Агент эти цели сам не вызывает.
 - `.gitignore` — как у каркаса Laravel, плюс `.env.*`, кроме `.env.example`.
-- `deploy/docker/dev/php/Dockerfile` — PHP 8.5, Swoole 6.2, расширения под Postgres, Redis, Kafka и OPcache. Другие dev-образы класть рядом, каталогом на сервис: `deploy/docker/dev/<сервис>`. `docker-compose.yml` будет в корне. Сейчас его нет, контейнеры не запущены.
+- `deploy/docker/dev/php/Dockerfile` — PHP 8.5, Swoole 6.2, расширения под Postgres, Redis, Kafka и OPcache. Другие dev-образы класть рядом, каталогом на сервис: `deploy/docker/dev/<сервис>`.
+- `docker-compose.yml` в корне. Сервис приложения называется `app`. Контейнер пока выполняет `sleep infinity`: Laravel не установлен. Из `app` Kafka — `kafka:19092`, с хоста — `localhost:9092`. Пароль базы только в `.env`, не в compose и не в журнале. `.env.example` без значений.
 
 Дальше код кладётся туда, куда его кладёт `artisan make` и документация Laravel: `routes/api.php`, `app/Http/Controllers`, Form Request, API Resource, Policy, Job. Своего каркаса и модулей нет. Фронта нет.
 
