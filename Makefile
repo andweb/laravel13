@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart build logs ps shell test artisan composer
+.PHONY: help up down restart build logs ps shell test migrate artisan composer
 
 help:
 	@printf '%s\n' \
@@ -12,7 +12,8 @@ help:
 		'make ps        статус' \
 		'make shell     оболочка в контейнере app' \
 		'make test      php artisan test' \
-		'make artisan cmd="migrate"   команда Artisan' \
+		'make migrate   php artisan migrate --force' \
+		'make artisan cmd="migrate:status"   команда Artisan' \
 		'make composer cmd="install"  команда Composer'
 
 up:
@@ -37,10 +38,13 @@ shell:
 	docker compose exec app bash
 
 test:
-	docker compose exec app php artisan test
+	docker compose exec -T app php artisan test
+
+migrate:
+	docker compose exec -T app php artisan migrate --force
 
 artisan:
-	docker compose exec app php artisan $(cmd)
+	docker compose exec -T app php artisan $(cmd)
 
 composer:
 	docker compose exec app composer $(cmd)

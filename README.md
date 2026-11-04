@@ -16,7 +16,7 @@ make ps       # статус
 make shell    # оболочка контейнера app
 ```
 
-Первый `make up` долго собирает `rdkafka`. Контейнер `app` пока только спит: Laravel ещё нет, порт 8000 наружу открыт, но слушать его некому. Octane включим отдельной командой позже.
+Первый `make up` долго собирает `rdkafka`. Пока в контейнере не было Laravel, `app` только спал: команда `sleep infinity`, порт 8000 был проброшен, но слушать его было некому. Сейчас сервис запускает Octane на Swoole и слушает `0.0.0.0:8000`. После правки PHP нужен `docker exec orders-app php artisan octane:reload`, пока в настройках OPcache включена проверка файлов. Если воркер не подхватил код, перезапуск — `docker compose up -d`.
 
 Перед первым запуском скопируй `.env.example` в `.env` и впиши имя базы, пользователя и пароль. Без этого `make up` остановится сам: Compose не подставляет пустой пароль. Файл `.env` не коммитится.
 
@@ -25,12 +25,13 @@ make shell    # оболочка контейнера app
 Artisan и Composer тоже через Make, аргумент в `cmd`:
 
 ```bash
-make artisan cmd=migrate
+make migrate
+make artisan cmd=migrate:status
 make composer cmd=install
 make test
 ```
 
-`make test` заработает после установки Laravel. Тесты — штатный `php artisan test` (Pest или PHPUnit, как поставит каркас).
+`make migrate` запускает `php artisan migrate --force` в контейнере `app`. `--force` нужен, чтобы Artisan не ждал подтверждения в терминале. `make test` заработает после установки Laravel. Тесты — штатный `php artisan test` (Pest или PHPUnit, как поставит каркас).
 
 ## Поставить Laravel
 

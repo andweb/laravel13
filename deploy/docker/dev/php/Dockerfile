@@ -16,4 +16,10 @@ RUN apt-get update \
     && echo "opcache.enable_cli=1" > /usr/local/etc/php/conf.d/opcache-cli.ini \
     && rm -rf /var/lib/apt/lists/*
 
+# Octane и queue:work ловят сигналы через pcntl. В базовом образе его нет,
+# поэтому процесс octane:start сразу выходит. posix, mbstring, openssl,
+# tokenizer, xml, curl и pdo там уже собраны. sockets, intl, bcmath, zip
+# этому стенду не нужны.
+RUN docker-php-ext-install pcntl
+
 WORKDIR /var/www/html

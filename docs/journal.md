@@ -34,4 +34,13 @@
 - Попытка `docker compose exec ... > .env` оборвалась: оболочка сначала обнулила `.env`, Compose не нашёл `POSTGRES_*`. Пароль в чат не попадал. Файл фактически не сменился, в нём по-прежнему три строки `POSTGRES_*`. Обход — `docker exec` в отдельный файл.
 - Пароль базы хранится в `.env` в штатных переменных Laravel `DB_*`. Образ Postgres своих имён не понимает, поэтому compose при запуске копирует `DB_DATABASE`, `DB_USERNAME` и `DB_PASSWORD` в `POSTGRES_*` только внутрь контейнера базы. В файле одной копии достаточно. Пользователь привёл `.env` к этому виду.
 - `docker exec -T` на этой версии Docker не принимает флаг `-T`. Ключ сгенерирован так: `docker exec orders-app php artisan key:generate`. Artisan записал `APP_KEY` в `.env`. В чат ключ не копировали.
+- Каркас Laravel 13 в корне, его можно коммитить. Сервис `app` переводим на uid хоста (`HOST_UID`/`HOST_GID`, по умолчанию 1000), чтобы Composer не писал файлы от root. Контейнер ещё не пересоздавали, `laravel/octane` ещё не ставили.
+
+## 2026-11-04 21:30
+
+- Контейнер `app` пересоздан не от root. `composer require laravel/octane` прошёл, повторный `chown` не понадобился.
+- `octane:install --server=swoole` прошёл. В compose команда контейнера заменена на `octane:start --host=0.0.0.0 --port=8000`. Прежняя `sleep infinity` осталась комментарием в compose и абзацем в README.
+- Образ пересобран с `pcntl`. `curl` вернул `500`: Swoole жив, Postgres отвечает, таблицы `sessions` нет. Сессии в Laravel 13 по умолчанию в базе.
+- `make migrate` прошёл: штатные таблицы каркаса созданы. `curl` на `http://127.0.0.1:8000` вернул `200`. Дальше Sanctum через `make artisan cmd="install:api --without-migration-prompt"`. Команду ещё не запускали.
+
 

@@ -19,7 +19,7 @@
 - `Makefile` — `up`, `down`, `logs`, `shell`, `test`, `artisan cmd=...`, `composer cmd=...`. Сервис приложения называется `app`. Агент эти цели сам не вызывает.
 - `.gitignore` — как у каркаса Laravel, плюс `.env.*`, кроме `.env.example`. Правила в `.cursor/rules/` коммитятся.
 - `deploy/docker/dev/php/Dockerfile` — PHP 8.5, Swoole 6.2, расширения под Postgres, Redis, Kafka и OPcache. Другие dev-образы класть рядом, каталогом на сервис: `deploy/docker/dev/<сервис>`.
-- `docker-compose.yml` в корне. Контейнер пока выполняет `sleep infinity`. Из `app` Kafka — `kafka:19092`, с хоста — `localhost:9092`. Базу Laravel берёт из `.env` (`DB_*`). Compose только копирует эти значения в `POSTGRES_*` контейнера Postgres. Пароль в чат и журнал не копировать. `.env.example` без значений.
+- `docker-compose.yml` в корне. Сервис `app` работает не от root, а от `HOST_UID:HOST_GID` (по умолчанию 1000:1000), чтобы файлы на томе принадлежали пользователю хоста. Команда контейнера — `php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000`. Из `app` Kafka — `kafka:19092`, с хоста — `localhost:9092`. Базу Laravel берёт из `.env` (`DB_*`). Compose только копирует эти значения в `POSTGRES_*` контейнера Postgres. Пароль в чат и журнал не копировать. `.env.example` без значений.
 
 Дальше код кладётся туда, куда его кладёт `artisan make` и документация Laravel: `routes/api.php`, `app/Http/Controllers`, Form Request, API Resource, Policy, Job. Своего каркаса и модулей нет. Фронта нет.
 

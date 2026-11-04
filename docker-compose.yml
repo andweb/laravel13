@@ -10,7 +10,10 @@ services:
       - "8000:8000"
     volumes:
       - .:/var/www/html
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
+      HOME: /tmp
+      COMPOSER_HOME: /tmp/composer
       # Внутри сети Docker брокер слушает 19092. localhost:9092 — только с хоста.
       KAFKA_BROKERS: kafka:19092
       CLICKHOUSE_HOST: clickhouse
@@ -20,9 +23,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    # Laravel ещё нет, Octane запускать нечем. Контейнер просто живёт,
-    # чтобы внутри него ставить пакеты. Команду сменим на octane:start позже.
-    command: ["sleep", "infinity"]
+    # Пока Laravel не был установлен, контейнер только жил и не слушал порт:
+    # command: ["sleep", "infinity"]
+    # Слушать нужно на 0.0.0.0, иначе проброс порта 8000 с хоста не дойдёт до процесса.
+    command: ["php", "artisan", "octane:start", "--server=swoole", "--host=0.0.0.0", "--port=8000"]
 
   postgres:
     image: postgres:16
