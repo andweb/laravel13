@@ -2,7 +2,7 @@
 
 Один API без фронта: несколько типовых задач бэкенда в одном приложении. Стек — Laravel 13, PHP 8.5, Octane/Swoole, Postgres, Redis. Рядом в Docker лежат Kafka и ClickHouse. Всё, что проверяем, ходим через `curl`.
 
-План и ход работы — [docs/plan.md](docs/plan.md) и [docs/journal.md](docs/journal.md). Пройденные ручные кейсы — [docs/api-check.md](docs/api-check.md).
+План и ход работы — [docs/plan.md](docs/plan.md), [docs/ai-content.md](docs/ai-content.md) и [docs/journal.md](docs/journal.md). Пройденные ручные кейсы — [docs/api-check.md](docs/api-check.md).
 
 ## Какие задачи закрывает проект
 

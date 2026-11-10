@@ -21,7 +21,7 @@
 - [ ] Дыра Octane
 - [ ] Лог в ClickHouse
 - [x] OpenAPI через `dedoc/scramble`, выгрузка [openapi.json](openapi.json)
-- [ ] Интеграция с ИИ, ветка `ai-demo` — [ai-content.md](ai-content.md)
+- [x] Интеграция с ИИ, ветка `ai-demo` — [ai-content.md](ai-content.md)
 
 ## Что это за проект
 

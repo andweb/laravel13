@@ -178,5 +178,44 @@ curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http:/
 - Промпт заявления заменён: модель ставит степень проблемы от 1 до 5, первая строка «Степень проблемы: N», дальше только тело. `statement/header.md` и `statement/footer.md` удалены. `compose()` сохраняет текст модели как есть. Ручные кейсы в [api-check.md](api-check.md) пользователь сбросил, следующий `POST` пишем заново.
 - Промпт гороскопа собран заново: тон астролога-психолога для канала и прежний каркас. Первая строка — «Гороскоп на» с датой из запроса, дальше знаки от Овна до Рыб, у каждого свой эмодзи и два предложения. О себе модель не пишет. Файл читается при каждом job, перезапуск воркера для этой правки не нужен.
 - `docker compose exec app php artisan test --compact tests/Unit/AiContent tests/Feature/AiContent/StatementTest.php` — 13 passed, 56 assertions, 0.45s.
+- `POST /api/v1/statements` с `Idempotency-Key: zhkh-1` вернул `202`, `Retry-After: 2`, лимит `5`, осталось `4`. `Location` и тело совпали: `/api/v1/statements/4`, `{"data":{"id":4,"status":"pending","text":null}}`. Кейс в [api-check.md](api-check.md).
+
+```bash
+TOKEN=$(docker compose exec -T app php artisan tinker --execute 'echo App\Models\User::query()->where("email", "andrey@example.com")->firstOrFail()->createToken("ai-demo")->plainTextToken;')
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" -H "Content-Type: application/json" -H "Idempotency-Key: zhkh-1" -d '{"problem":"На кухне прорвало трубу, вода течёт второй час."}' http://localhost:8000/api/v1/statements
+```
+
+- `GET /api/v1/statements/4` вернул `200`, лимит `5`, осталось `4`. Статус `done`. Первая строка «Степень проблемы: 4», шапки и подписи нет. Полный текст в [api-check.md](api-check.md).
+
+```bash
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" http://localhost:8000/api/v1/statements/4
+```
+
+- `GET /api/v1/horoscope?date=2026-11-11` вернул `200`, лимит `5`, осталось `3`. `id` 2, статус `done`, текст «Фиксированный ответ без обращения к модели.» Строка на эту дату уже была готова от драйвера `fake`. Кейс в [api-check.md](api-check.md).
+
+```bash
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-11"
+```
+
+- `GET /api/v1/horoscope?date=2026-11-12` вернул `202`, `Retry-After: 2`, лимит `5`, осталось `4`. `Location` нет. Тело: `{"data":{"id":5,"status":"pending","text":null}}`. Кейс в [api-check.md](api-check.md).
+
+```bash
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-12"
+```
+
+## 2026-11-11 01:00
+
+- Повтор `GET /api/v1/horoscope?date=2026-11-12` вернул `200`, лимит `5`, осталось `4`. `id` 5, статус `done`. Первая строка «Гороскоп на 12 ноября 2026, четверг», дальше двенадцать знаков с разными эмодзи. Полный текст в [api-check.md](api-check.md). Строки воркера в выводе не было.
+
+```bash
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-12"
+```
+
+- Ещё один `GET /api/v1/horoscope?date=2026-11-12` вернул `200`, лимит `5`, осталось `4`. Снова `id` 5 и `Content-Length: 10613`. Новый текст не появился. Вывода воркера в сообщении не было. Кейс в [api-check.md](api-check.md). Ручные примеры README на новых промптах закрыты. В [plan.md](plan.md) пункт «Интеграция с ИИ» отмечен сделанным. Шаг GitHub Actions в плане фичи по-прежнему по желанию и не делался.
+- [api-check.md](api-check.md) переписан как протокол: у каждого кейса есть что проверяли, что ожидали и что получили. ST-02 пройден с замечанием: модель дописала перекрытие воды. Повторы job в прогоне не случались.
+
+```bash
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-12"
+```
 
 
