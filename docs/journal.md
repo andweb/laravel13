@@ -160,6 +160,17 @@ docker compose exec app php artisan make:test --unit AiContent/AiGenerationKindT
 - `docker compose exec app php artisan scramble:export --path=docs/openapi.json`. В файле есть `/v1/statements`, `/v1/statements/{aiGeneration}` и `/v1/horoscope`, у заявления коды `202` и `502`.
 - README переписан как обзор учебного бэкенда: заказ, транзакция и outbox, Redis, интеграция с ИИ. Релей Kafka, дыра Octane и ClickHouse в тексте остаются следующими шагами. Pint и ручной вызов ещё не делали.
 - В [plan.md](plan.md) чек-лист: после ClickHouse пункт OpenAPI (выгрузка уже лежит в репозитории), последним — интеграция с ИИ.
-- Pint по файлам фичи: 26 файлов, одно исправление в `tests/Feature/AiContent/StatementTest.php` — импорт `TestResponse` вместо полного имени в docblock. Ручной вызов ещё не делали.
+- Pint по файлам фичи: 26 файлов, одно исправление в `tests/Feature/AiContent/StatementTest.php` — импорт `TestResponse` вместо полного имени в docblock.
+- Ручной вызов заявления. Токен через tinker для `andrey@example.com`, в журнал значение не кладём. `POST /api/v1/statements` с `Idempotency-Key: demo-1` вернул `202`, `Retry-After: 2`, лимит `5`, осталось `4`. В теле `{"data":{"id":2,"status":"pending","text":null}}`, заголовок `Location` при этом указывает на `/api/v1/statements/1`. Читать нужно `/api/v1/statements/2`. Ответов `GET` заявления и гороскопа в выводе не было.
+
+```bash
+docker compose exec -T app php artisan tinker --execute 'echo App\Models\User::query()->where("email", "andrey@example.com")->firstOrFail()->createToken("ai-demo")->plainTextToken;'
+curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" -H "Content-Type: application/json" -H "Idempotency-Key: demo-1" -d '{"problem":"На кухне прорвало трубу, вода течёт второй час."}' http://localhost:8000/api/v1/statements
+curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" http://localhost:8000/api/v1/statements/1
+curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-11"
+```
+
+- Воркер очереди уже был запущен: в `20:13:01` он добил старый `RecordOrderPaid` за 97.75ms. Сразу после `POST` заявления, в `20:16:05`, два `GenerateAiContent` завершились за 6.85ms и 2.50ms. Сеть до DeepSeek за такое время не ходит, воркер взял драйвер `fake`. Второй job — гороскоп из третьего `curl`. Тексты уже должны быть в `GET /api/v1/statements/2` и в `GET /api/v1/horoscope?date=2026-11-11`. Живой DeepSeek этот процесс не подхватит: он держит конфиг с запуска, его нужно остановить и поднять заново после `AI_CONTENT_DRIVER=deepseek`.
+- Ручные кейсы API вынесены в [api-check.md](api-check.md), со ссылкой на README. В README оставлены команды, примеры дальше гоняем по одному. В примере токена адрес заменён на `andrey@example.com`.
 
 

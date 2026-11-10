@@ -2,7 +2,7 @@
 
 Один API без фронта: несколько типовых задач бэкенда в одном приложении. Стек — Laravel 13, PHP 8.5, Octane/Swoole, Postgres, Redis. Рядом в Docker лежат Kafka и ClickHouse. Всё, что проверяем, ходим через `curl`.
 
-План и ход работы — [docs/plan.md](docs/plan.md) и [docs/journal.md](docs/journal.md).
+План и ход работы — [docs/plan.md](docs/plan.md) и [docs/journal.md](docs/journal.md). Пройденные ручные кейсы — [docs/api-check.md](docs/api-check.md).
 
 ## Какие задачи закрывает проект
 
@@ -74,14 +74,14 @@ docker compose exec app php artisan queue:work redis
 Воркер занимает терминал. Токен:
 
 ```bash
-docker compose exec app php artisan tinker --execute 'echo App\Models\User::query()->where("email", "anna@example.com")->firstOrFail()->createToken("ai-demo")->plainTextToken;'
+docker compose exec app php artisan tinker --execute 'echo App\Models\User::query()->where("email", "andrey@example.com")->firstOrFail()->createToken("ai-demo")->plainTextToken;'
 ```
 
-Пока в ответе `pending`, повтори GET. Для заявления адрес лежит в заголовке `Location`.
+Примеры ниже запускай по одному. Что ответил сервер, пишется в [docs/api-check.md](docs/api-check.md), не сюда. Пока в ответе `pending`, следующий GET бери по `data.id` из тела.
 
 ```bash
 curl -sS -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" -H "Content-Type: application/json" -H "Idempotency-Key: demo-1" -d '{"problem":"На кухне прорвало трубу, вода течёт второй час."}' http://localhost:8000/api/v1/statements
-curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" http://localhost:8000/api/v1/statements/1
+curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" http://localhost:8000/api/v1/statements/ID
 curl -sS -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" "http://localhost:8000/api/v1/horoscope?date=2026-11-11"
 ```
 
