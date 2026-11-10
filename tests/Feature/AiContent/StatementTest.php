@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Llm\LlmManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\TestResponse;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -170,7 +171,7 @@ class StatementTest extends TestCase
     }
 
     /**
-     * @return \Illuminate\Testing\TestResponse
+     * @return TestResponse
      */
     private function postStatement(string $key, ?string $problem = null)
     {

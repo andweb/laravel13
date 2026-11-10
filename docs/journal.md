@@ -160,5 +160,6 @@ docker compose exec app php artisan make:test --unit AiContent/AiGenerationKindT
 - `docker compose exec app php artisan scramble:export --path=docs/openapi.json`. В файле есть `/v1/statements`, `/v1/statements/{aiGeneration}` и `/v1/horoscope`, у заявления коды `202` и `502`.
 - README переписан как обзор учебного бэкенда: заказ, транзакция и outbox, Redis, интеграция с ИИ. Релей Kafka, дыра Octane и ClickHouse в тексте остаются следующими шагами. Pint и ручной вызов ещё не делали.
 - В [plan.md](plan.md) чек-лист: после ClickHouse пункт OpenAPI (выгрузка уже лежит в репозитории), последним — интеграция с ИИ.
+- Pint по файлам фичи: 26 файлов, одно исправление в `tests/Feature/AiContent/StatementTest.php` — импорт `TestResponse` вместо полного имени в docblock. Ручной вызов ещё не делали.
 
 
