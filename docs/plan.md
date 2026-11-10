@@ -17,10 +17,11 @@
 - [x] Пользователь, заказ, строки, API
 - [x] Плохой SQL и индекс
 - [x] Redis
-- [ ] Генерация AI-контента, ветка `ai-demo` — [ai-content.md](ai-content.md)
 - [ ] Kafka
 - [ ] Дыра Octane
 - [ ] Лог в ClickHouse
+- [x] OpenAPI через `dedoc/scramble`, выгрузка [openapi.json](openapi.json)
+- [ ] Интеграция с ИИ, ветка `ai-demo` — [ai-content.md](ai-content.md)
 
 ## Что это за проект
 
@@ -182,4 +183,4 @@ docker compose exec app composer create-project laravel/laravel:^13.0 /tmp/larav
 
 ## После контура
 
-Если время осталось и ты сам просишь следующий кусок, по одному: тест Pest на переход, OpenAPI, флаг через GrowthBook, файл в MinIO, страница Livewire. Сам я хвост не начинаю.
+Если время осталось и ты сам просишь следующий кусок, по одному: тест Pest на переход, флаг через GrowthBook, файл в MinIO, страница Livewire. Сам я хвост не начинаю. OpenAPI и интеграция с ИИ уже стоят в списке выше, последним пунктом — ИИ.
