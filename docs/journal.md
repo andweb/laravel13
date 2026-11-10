@@ -151,5 +151,7 @@ docker compose exec app php artisan make:test --unit AiContent/AiGenerationKindT
 ## 2026-11-10 23:30
 
 - `docker compose exec app php artisan test --compact tests/Feature/AiContent/StatementTest.php` — сначала 4 failed, 4 passed. `status` на верхнем уровне JSON был `null`: `JsonResource` оборачивает ответ в `data`, как и заказы. Из-за пустого `id` чтение чужого заявления ушло на `GET /api/v1/statements` и получило `405`, а `findOrFail` не нашёл строку. Тест переведён на `data.id` и `data.status`. Повторный прогон: 8 passed, 48 assertions, 0.45s.
+- Заготовки гороскопа. Пользователь выполнил `make:request AiContent/ShowHoroscopeRequest`, `make:class Actions/AiContent/RequestHoroscope`, `make:controller AiContent/HoroscopeController --invokable`, `make:test AiContent/HoroscopeTest`. Заполнены Form Request, Action, контроллер и `GET /api/v1/horoscope`. В Redis на ключ `ai-content:horoscope:{date}` кладётся `id` и текст до конца текущих суток.
+- `docker compose exec app php artisan test --compact tests/Feature/AiContent/HoroscopeTest.php` — сначала 5 failed, 1 passed. Повтор на ту же дату не находил строку: cast `date` пишет в SQLite `2026-11-10 00:00:00`, а `firstOrCreate` искал `2026-11-10`. Поиск заменён на `whereDate`. Следующий прогон: 5 passed, 1 failed. Дата `10.11.2026` доходила до проверки диапазона, Carbon бросал `InvalidFormatException`, ответ был `500`. У правила `date` теперь `bail`. Повторный прогон: 6 passed, 41 assertions, 0.45s.
 
 
