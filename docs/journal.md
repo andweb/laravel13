@@ -104,6 +104,11 @@
 
 ## 2026-11-10 18:30
 
-- Миграция `create_outbox_table` заполнена: `order_id`, `type`, `payload`, `published_at`. Ещё не запускали `migrate`.
+- Миграция `create_outbox_table` заполнена: `order_id`, `type`, `payload`, `published_at`. Пользователь выполнил `docker compose exec -T app php artisan migrate`.
+- Смена статуса в той же транзакции пишет строку `outbox` с типом `order.status_changed`. Воркер `app` после этой правки ещё не перезапускали.
+
+## 2026-11-10 20:30
+
+- `docker compose exec -T postgres psql -U lab -d test_laravel -c "SELECT id, order_id, type, payload, published_at FROM outbox ORDER BY id;"`. Первый прогон был пустым, до смены статуса. После перехода заказа `13` из `awaiting_payment` в `paid` появилась строка `1`, `published_at` пустой. Релей в топик `order.events` ещё не создавали.
 
 

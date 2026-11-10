@@ -73,9 +73,20 @@ class OrderController extends Controller
     {
         $order = DB::transaction(function () use ($request, $order) {
             $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $from = (string) $locked->status;
 
             $locked->status->transitionTo($request->validated('status'));
             $locked->load(['user', 'lines']);
+            DB::table('outbox')->insert([
+                'order_id' => $locked->id,
+                'type' => 'order.status_changed',
+                'payload' => json_encode([
+                    'order_id' => $locked->id,
+                    'from' => $from,
+                    'to' => (string) $locked->status,
+                ]),
+                'created_at' => now(),
+            ]);
             Cache::put($this->statusCacheKey($locked), (string) $locked->status, 60);
 
             return $locked;
