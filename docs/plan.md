@@ -4,7 +4,7 @@
 
 ## Где мы
 
-Остановка 2026-11-04. API заказа работает из Postman: создание, список своих, просмотр своего, незаконный переход статуса отвечает `422`. Дальше снять `EXPLAIN` фильтра по статусу. На одном заказе план будет последовательным чтением, потом нужны тысячи строк и индекс.
+Остановка 2026-11-10. Индекс `(status, created_at)` стоит. План стал `Bitmap Index Scan` плюс чтение кучи и отдельная сортировка. Дальше Redis: кэш статуса, throttle, идемпотентность и один job.
 
 Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту `8000`, Sanctum, MCP Postgres (профиль `orders`, база `test_laravel`), модели `Order` и `OrderLine`, состояния Spatie, Policy владельца, сидер Anna и Andrey. Токен для Postman выпускается через `tinker`, отдельного маршрута входа нет. В `.env.example` есть `OCTANE_SERVER=swoole` и `REFUNDS_ENABLED=false`. Команды в чате пишем как `docker compose exec`, не через Make. `octane:reload` не используем: один раз он убил мастер Swoole. Код подхватывает `docker compose restart app`.
 
@@ -13,7 +13,7 @@
 - [x] Laravel, Octane, Sanctum
 - [x] MCP к Postgres
 - [x] Пользователь, заказ, строки, API
-- [ ] Плохой SQL и индекс
+- [x] Плохой SQL и индекс
 - [ ] Redis
 - [ ] Kafka
 - [ ] Дыра Octane
