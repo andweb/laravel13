@@ -4,7 +4,7 @@
 
 ## Где мы
 
-Остановка 2026-11-10. Индекс оставлен. Дальше Redis: в коде кэш статуса на 60 секунд, throttle 5 созданий в минуту и идемпотентность заголовком `Idempotency-Key`. В `.env` нужно переключить `CACHE_STORE=redis` и `QUEUE_CONNECTION=redis`, затем перезапустить `app`. Job ещё не создавали.
+Остановка 2026-11-10. Индекс оставлен. Redis закрыт: кэш статуса, throttle, идемпотентность и job `RecordOrderPaid` после `paid`. Воркер один раз забрал задание заказа `8`, в логе `order paid`. Дальше Kafka: outbox и топик `order.events`.
 
 Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту `8000`, Sanctum, MCP Postgres (профиль `orders`, база `test_laravel`), модели `Order` и `OrderLine`, состояния Spatie, Policy владельца, сидер Anna и Andrey. Токен для Postman выпускается через `tinker`, отдельного маршрута входа нет. В `.env.example` есть `OCTANE_SERVER=swoole` и `REFUNDS_ENABLED=false`. Команды в чате пишем как `docker compose exec`, не через Make. `octane:reload` не используем: один раз он убил мастер Swoole. Код подхватывает `docker compose restart app`.
 
@@ -14,7 +14,7 @@
 - [x] MCP к Postgres
 - [x] Пользователь, заказ, строки, API
 - [x] Плохой SQL и индекс
-- [ ] Redis
+- [x] Redis
 - [ ] Kafka
 - [ ] Дыра Octane
 - [ ] Лог в ClickHouse

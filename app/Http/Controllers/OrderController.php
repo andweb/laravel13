@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Jobs\RecordOrderPaid;
 use App\Models\Order;
+use App\Models\States\Order\Paid;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -78,6 +80,10 @@ class OrderController extends Controller
 
             return $locked;
         });
+
+        if ((string) $order->status === Paid::$name) {
+            RecordOrderPaid::dispatch($order);
+        }
 
         return new OrderResource($order);
     }
