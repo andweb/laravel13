@@ -35,8 +35,6 @@ app/Services/Llm/DeepSeekDriver.php
 app/Services/Llm/FakeDriver.php
 config/ai-content.php
 resources/prompts/statement/system.md
-resources/prompts/statement/header.md
-resources/prompts/statement/footer.md
 resources/prompts/horoscope/system.md
 routes/ai-content.php
 tests/Unit/Llm/...
@@ -49,7 +47,7 @@ tests/Feature/AiContent/...
 
 1. Контроллер берёт данные из Form Request и вызывает Action. Своей логики в контроллере нет.
 2. Action находит или создаёт строку `ai_generations`. Job ставится только если строка создана этим запросом (`wasRecentlyCreated`), через `->afterCommit()`.
-3. Job `GenerateAiContent` берёт system из md через `AiGenerationKind`, собирает user-текст из `request` строки, вызывает `LlmManager`. Для заявления склеивает шапку, середину от модели и футер. Пишет `response` и `status = done`.
+3. Job `GenerateAiContent` берёт system из md через `AiGenerationKind`, собирает user-текст из `request` строки, вызывает `LlmManager`. В `response` пишет текст модели как есть и ставит `status = done`.
 4. Клиент опрашивает ручку: `pending` — `202`, `done` — `200` с текстом, `failed` — `502`.
 
 HTTP-запрос не ждёт модель 15–30 секунд. Воркер очереди запускается отдельно: `docker compose exec app php artisan queue:work redis`. Пока он не запущен, строка остаётся `pending`.
@@ -118,7 +116,7 @@ HTTP-сторона под Octane только пишет строку и чит
 
 - `POST /api/v1/statements`. Заголовок `Idempotency-Key` обязателен. Тело `{ "problem": "..." }`, от 20 до 2000 символов.
   - Новая строка или ещё `pending` — `202`, заголовки `Location: /api/v1/statements/{id}` и `Retry-After`.
-  - `done` — `200`, текст заявления целиком: шапка, середина, футер.
+  - `done` — `200`, текст модели целиком. Первая строка — «Степень проблемы: N». Шапка и подпись в ответ не дописываются.
   - `failed` — `502`. Повтор — с новым ключом.
   - Тот же ключ с другим `problem` — `422`.
 - `GET /api/v1/statements/{id}`. Те же `202`, `200`, `502`. Чужая строка — `403` через Policy.
@@ -132,9 +130,8 @@ HTTP-сторона под Octane только пишет строку и чит
 
 ## Промпты
 
-- `statement/system.md` — модель пишет только середину заявления в УК по описанию проблемы ЖКХ. Без шапки, подписи и даты.
-- `statement/header.md` и `statement/footer.md` — фиксированные части. Плейсхолдеры `{name}` и `{date}` подставляет `AiGenerationKind` через `strtr`, имя — из пользователя.
-- `horoscope/system.md` — гороскоп на дату: двенадцать знаков от Овна до Рыб, абзац на знак, у каждого свой эмодзи.
+- `statement/system.md` — модель оценивает проблему ЖКХ от 1 до 5 и пишет тело заявления. Первая строка ответа — «Степень проблемы: N». Шапка, слово «ЗАЯВЛЕНИЕ», ФИО, адрес и подпись в текст не входят: их не пишет ни модель, ни код.
+- `horoscope/system.md` — гороскоп для канала: живая первая строка с датой из запроса, затем двенадцать знаков от Овна до Рыб. У каждого знака свой эмодзи и два предложения.
 
 Полный текст промптов — только в этих файлах.
 
@@ -147,11 +144,11 @@ Unit:
 - `LlmManager` берёт драйвер из конфига. Неизвестный драйвер — исключение.
 - `DeepSeekDriver` под `Http::fake()`: адрес `/chat/completions`, Bearer, `model`, два сообщения, `stream: false`. Ответ 500 и пустой `content` — исключение.
 - `FakeDriver` возвращает свой текст.
-- `AiGenerationKind`: system читается из md, заявление склеивается из шапки, середины и футера.
+- `AiGenerationKind`: system читается из md. Текст модели сохраняется как есть, пустой ответ отклоняется.
 
 Feature (`RefreshDatabase`, `Queue::fake()`: в `phpunit.xml` очередь `sync`, без фейка `POST` сразу вернёт `200`):
 
-- Заявление: `401` без токена. `422` без `problem` и без ключа. Первый `POST` — `202`, `Location`, один job. Повтор с тем же ключом — тот же `id`, job по-прежнему один. Тот же ключ с другим текстом — `422`. Чужой `GET` — `403`. После `handle()` job с `FakeDriver` — `200`, в тексте шапка и футер. После `failed()` — `502`.
+- Заявление: `401` без токена. `422` без `problem` и без ключа. Первый `POST` — `202`, `Location`, один job. Повтор с тем же ключом — тот же `id`, job по-прежнему один. Тот же ключ с другим текстом — `422`. Чужой `GET` — `403`. После `handle()` job с `FakeDriver` — `200`, в тексте ответ модели без шапки. После `failed()` — `502`.
 - Гороскоп: первый `GET` — `202` и один job, повтор — без второго. После job — `200`, ключ в кэше. Дата вне диапазона — `422`. После `failed()` следующий `GET` ставит job заново.
 
 ## OpenAPI

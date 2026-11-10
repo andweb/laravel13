@@ -36,15 +36,12 @@ class GenerateAiContent implements ShouldQueue
 
         $kind = $generation->kind;
         $middle = $llm->complete($kind->systemPrompt(), $kind->userPrompt($generation->request));
-        $date = $generation->created_at
-            ->timezone((string) config('ai-content.timezone'))
-            ->format('d.m.Y');
 
         AiGeneration::query()
             ->whereKey($generation->id)
             ->where('status', AiGenerationStatus::Pending->value)
             ->update([
-                'response' => $kind->compose($middle, $generation->user?->name ?? '', $date),
+                'response' => $kind->compose($middle),
                 'status' => AiGenerationStatus::Done->value,
                 'error' => null,
                 'updated_at' => now(),

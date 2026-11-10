@@ -108,21 +108,13 @@ class StatementTest extends TestCase
         $id = $this->actingAs($user, 'sanctum')->postStatement('key-1')->json('data.id');
         $this->pushedJob()->handle($this->app->make(LlmManager::class));
 
-        $generation = AiGeneration::query()->findOrFail($id);
-        $date = $generation->created_at->timezone('Europe/Moscow')->format('d.m.Y');
-
         $text = $this->actingAs($user, 'sanctum')
             ->getJson('/api/v1/statements/'.$id)
             ->assertOk()
             ->assertJsonPath('data.status', 'done')
             ->json('data.text');
 
-        $this->assertIsString($text);
-        $this->assertStringContainsString('В управляющую компанию', $text);
-        $this->assertStringContainsString('Середина заявления.', $text);
-        $this->assertStringContainsString('Прошу рассмотреть обращение', $text);
-        $this->assertStringContainsString($user->name, $text);
-        $this->assertStringContainsString($date, $text);
+        $this->assertSame('Середина заявления.', $text);
     }
 
     public function test_failed_job_returns_502(): void

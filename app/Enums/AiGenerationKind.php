@@ -29,7 +29,7 @@ enum AiGenerationKind: string
         };
     }
 
-    public function compose(string $middle, string $name = '', string $date = ''): string
+    public function compose(string $middle): string
     {
         $middle = trim($middle);
 
@@ -37,18 +37,7 @@ enum AiGenerationKind: string
             throw new InvalidArgumentException('Completion is empty.');
         }
 
-        return match ($this) {
-            self::Statement => $this->fill('header.md', $name, $date)."\n\n".$middle."\n\n".$this->fill('footer.md', $name, $date),
-            self::Horoscope => $middle,
-        };
-    }
-
-    private function fill(string $name, string $author, string $date): string
-    {
-        return strtr($this->read('statement/'.$name), [
-            '{name}' => $author,
-            '{date}' => $date,
-        ]);
+        return $middle;
     }
 
     /**

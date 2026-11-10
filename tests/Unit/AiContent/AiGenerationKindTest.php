@@ -16,29 +16,17 @@ class AiGenerationKindTest extends TestCase
         $horoscope = AiGenerationKind::Horoscope->systemPrompt();
 
         $this->assertSame($this->prompt('statement/system.md'), $statement);
-        $this->assertStringContainsString('только середину', $statement);
+        $this->assertStringContainsString('Степень проблемы', $statement);
         $this->assertSame($this->prompt('horoscope/system.md'), $horoscope);
         $this->assertStringContainsString('Овен', $horoscope);
         $this->assertStringContainsString('Рыбы', $horoscope);
     }
 
-    public function test_statement_is_assembled_from_header_middle_and_footer(): void
+    public function test_statement_keeps_the_model_text(): void
     {
-        $text = AiGenerationKind::Statement->compose('Середина.', 'Анна', '10.11.2026');
+        $text = AiGenerationKind::Statement->compose("Степень проблемы: 5\n\nПрорвало трубу.");
 
-        $this->assertSame(<<<'TEXT'
-В управляющую компанию
-
-от Анна
-10.11.2026
-
-Середина.
-
-Прошу рассмотреть обращение и ответить в установленный срок.
-
-Анна
-10.11.2026
-TEXT, $text);
+        $this->assertSame("Степень проблемы: 5\n\nПрорвало трубу.", $text);
     }
 
     public function test_horoscope_keeps_the_model_text(): void
