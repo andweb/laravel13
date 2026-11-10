@@ -119,4 +119,37 @@
 
 - План [ai-content.md](ai-content.md) переписан. Вызов DeepSeek — свой `LlmManager` на `Illuminate\Support\Manager`: пакет `laravel/ai` требует Laravel 12+, у работодателя 10–11. Добавлены статус генерации и обработка сбоя, уникальные индексы против гонки, Policy на чужое заявление, ограничение дат гороскопа и throttle, сквозные feature-тесты. Кода фичи ещё нет.
 
+## 2026-11-10 23:00
+
+- Шаг LLM фичи AI-контента. Пользователь создал заготовки:
+
+```bash
+docker compose exec app php artisan make:interface Services/Llm/LlmDriver --no-interaction
+docker compose exec app php artisan make:class Services/Llm/LlmManager --no-interaction
+docker compose exec app php artisan make:class Services/Llm/DeepSeekDriver --no-interaction
+docker compose exec app php artisan make:class Services/Llm/FakeDriver --no-interaction
+docker compose exec app php artisan make:test --unit Llm/LlmManagerTest --no-interaction
+docker compose exec app php artisan make:test --unit Llm/DeepSeekDriverTest --no-interaction
+docker compose exec app php artisan make:test --unit Llm/FakeDriverTest --no-interaction
+```
+
+- Заполнены `LlmDriver`, `LlmManager`, `DeepSeekDriver`, `FakeDriver`. Менеджер — singleton в `AppServiceProvider`. Конфиг `config/ai-content.php`, в `.env.example` — `AI_CONTENT_DRIVER=fake` и пустой `DEEPSEEK_API_KEY`. В базовом `tests/TestCase.php` включён `Http::preventStrayRequests()`.
+- `docker compose exec app php artisan test --compact tests/Unit/Llm` — 8 passed, 11 assertions, 0.43s.
+- Заготовки данных. `make:enum Enums/AiGenerationKind` попал в `app/Enums`: каталога ещё не было, и Artisan взял путь из аргумента. `make:enum Enums/AiGenerationStatus` после этого ушёл в `app/Enums/Enums`, потому что каталог `app/Enums` уже стал пространством по умолчанию. Лишний файл убран, статус лежит в `app/Enums/AiGenerationStatus.php`.
+
+```bash
+docker compose exec app php artisan make:enum Enums/AiGenerationKind --string --no-interaction
+docker compose exec app php artisan make:enum Enums/AiGenerationStatus --string --no-interaction
+docker compose exec app php artisan make:model AiGeneration -m --no-interaction
+docker compose exec app php artisan make:test --unit AiContent/AiGenerationKindTest --no-interaction
+```
+
+- Заполнены enum'ы, модель `AiGeneration`, миграция `ai_generations`, промпты в `resources/prompts` и unit-тест склейки заявления.
+- `docker compose exec app php artisan migrate` — `2026_11_10_191942_create_ai_generations_table`, 11.55ms. `docker compose exec app php artisan test --compact tests/Unit/AiContent` — 5 passed, 13 assertions, 0.26s.
+- Заготовки заявления. Пользователь выполнил `make:request AiContent/StoreStatementRequest`, `make:class Actions/AiContent/RequestStatement`, `make:controller AiContent/StatementController`, `make:resource AiGenerationResource`, `make:policy AiGenerationPolicy --model=AiGeneration`, `make:job GenerateAiContent`, `make:test AiContent/StatementTest`. Заполнены Action, контроллер, Form Request, Resource, Policy, job, `routes/ai-content.php`, подключение в `bootstrap/app.php` через `then:` и лимитер `ai-content` (5 в минуту).
+
+## 2026-11-10 23:30
+
+- `docker compose exec app php artisan test --compact tests/Feature/AiContent/StatementTest.php` — сначала 4 failed, 4 passed. `status` на верхнем уровне JSON был `null`: `JsonResource` оборачивает ответ в `data`, как и заказы. Из-за пустого `id` чтение чужого заявления ушло на `GET /api/v1/statements` и получило `405`, а `findOrFail` не нашёл строку. Тест переведён на `data.id` и `data.status`. Повторный прогон: 8 passed, 48 assertions, 0.45s.
+
 

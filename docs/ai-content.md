@@ -114,7 +114,7 @@ HTTP-сторона под Octane только пишет строку и чит
 
 ## API v1
 
-Префикс `/api/v1`, middleware `api`, `auth:sanctum`, `throttle:ai-content`. Ответ — `AiGenerationResource`: `id`, `status`, `text`.
+Префикс `/api/v1`, middleware `api`, `auth:sanctum`, `throttle:ai-content`. Ответ — `AiGenerationResource` в обёртке `data`, как у ресурсов заказов: `id`, `status`, `text`.
 
 - `POST /api/v1/statements`. Заголовок `Idempotency-Key` обязателен. Тело `{ "problem": "..." }`, от 20 до 2000 символов.
   - Новая строка или ещё `pending` — `202`, заголовки `Location: /api/v1/statements/{id}` и `Retry-After`.
