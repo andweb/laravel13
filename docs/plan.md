@@ -4,7 +4,7 @@
 
 ## Где мы
 
-Остановка 2026-11-10. Индекс оставлен. Redis закрыт: кэш статуса, throttle, идемпотентность и job `RecordOrderPaid` после `paid`. Воркер один раз забрал задание заказа `8`, в логе `order paid`. Дальше Kafka: outbox и топик `order.events`.
+Остановка 2026-11-10. Redis закрыт. Kafka: миграция `outbox` написана, ещё не применена. В строке будут id заказа, тип события, payload и `published_at`. Релей в `order.events` ещё не писали.
 
 Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту `8000`, Sanctum, MCP Postgres (профиль `orders`, база `test_laravel`), модели `Order` и `OrderLine`, состояния Spatie, Policy владельца, сидер Anna и Andrey. Токен для Postman выпускается через `tinker`, отдельного маршрута входа нет. В `.env.example` есть `OCTANE_SERVER=swoole` и `REFUNDS_ENABLED=false`. Команды в чате пишем как `docker compose exec`, не через Make. `octane:reload` не используем: один раз он убил мастер Swoole. Код подхватывает `docker compose restart app`.
 

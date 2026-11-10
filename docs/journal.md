@@ -102,4 +102,8 @@
 - После перехода заказа в `paid` контроллер ставит в очередь Redis job `RecordOrderPaid`. Тело пишет в лог id заказа. Воркер ещё не запускали, `app` после этой правки не перезапускали.
 - Очередь смотрели так: `docker compose exec -T redis redis-cli -n 0 LLEN "laravel-database-queues:default"`. До оплаты было `0`, после перехода в `paid` стало `1`. `docker compose exec -T app php artisan queue:work redis --once -v` забрал `App\Jobs\RecordOrderPaid` за 44.05ms и оставил список пустым. В логе строка `[2026-11-10 14:21:20] local.INFO: order paid {"order_id":8}`. Команда лога: `docker compose exec -T app tail -n 20 storage/logs/laravel.log | grep 8`.
 
+## 2026-11-10 18:30
+
+- Миграция `create_outbox_table` заполнена: `order_id`, `type`, `payload`, `published_at`. Ещё не запускали `migrate`.
+
 
