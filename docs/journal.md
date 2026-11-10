@@ -111,4 +111,12 @@
 
 - `docker compose exec -T postgres psql -U lab -d test_laravel -c "SELECT id, order_id, type, payload, published_at FROM outbox ORDER BY id;"`. Первый прогон был пустым, до смены статуса. После перехода заказа `13` из `awaiting_payment` в `paid` появилась строка `1`, `published_at` пустой. Релей в топик `order.events` ещё не создавали.
 
+## 2026-11-10 22:00
+
+- Ветка `ai-demo`. Лаборатория заказов остаётся на месте: outbox без релея в Kafka. План фичи «генерация AI-контента» — [ai-content.md](ai-content.md). Кода фичи ещё нет.
+
+## 2026-11-10 22:30
+
+- План [ai-content.md](ai-content.md) переписан. Вызов DeepSeek — свой `LlmManager` на `Illuminate\Support\Manager`: пакет `laravel/ai` требует Laravel 12+, у работодателя 10–11. Добавлены статус генерации и обработка сбоя, уникальные индексы против гонки, Policy на чужое заявление, ограничение дат гороскопа и throttle, сквозные feature-тесты. Кода фичи ещё нет.
+
 
