@@ -74,12 +74,27 @@
 
 ## 2026-11-10 10:30
 
-- На двух заказах `EXPLAIN` показал `Seq Scan` и одну отброшенную строку. После 5000 заказов Анны план тот же по форме: вся таблица, фильтр оставил 1001 строку, отдельно `Sort`. Индекса ещё не было.
+- На двух заказах `EXPLAIN` показал `Seq Scan` и одну отброшенную строку. Команда: `docker compose exec -T postgres psql -U lab -d test_laravel -c "EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE status = 'awaiting_payment' ORDER BY created_at DESC;"`.
+- Пять тысяч заказов Анны и повторный план одной командой: `INSERT` из `generate_series(1, 5000)`, затем `ANALYZE orders`, затем тот же `EXPLAIN`. План тот же по форме: вся таблица, фильтр оставил 1001 строку, отдельно `Sort`. Индекса ещё не было.
 - Написана миграция `orders_status_created_at_index` по `(status, created_at)`. `migrate` ещё не запускали.
 
 ## 2026-11-10 11:00
 
-- Индекс применён. Повторный `EXPLAIN` ушёл с `Seq Scan` на `Bitmap Index Scan` по `orders_status_created_at_index` и `Bitmap Heap Scan`. Отдельный `Sort` остался: bitmap не сохраняет порядок `created_at`. Время 0,478 мс против 0,344 мс без индекса, 8 страниц индекса читались с диска.
+- Индекс применён командой `docker compose exec -T app php artisan migrate`. Повторный `EXPLAIN` той же командой, что утром: ушёл с `Seq Scan` на `Bitmap Index Scan` по `orders_status_created_at_index` и `Bitmap Heap Scan`. Отдельный `Sort` остался: bitmap не сохраняет порядок `created_at`. Время 0,478 мс против 0,344 мс без индекса, 8 страниц индекса читались с диска.
 - Вывод шага: индекс оставляем. На 5000 горячих строках он не ускорил запрос, потому что совпадает каждая пятая и куча уже в кэше. Форма плана показывает, что фильтр ушёл в индекс. Снимать его из-за одного холодного прогона не нужно.
+
+## 2026-11-10 12:00
+
+- К созданию заказа добавлены кэш статуса на 60 секунд, `throttle:orders` (5 в минуту на пользователя) и повтор с заголовком `Idempotency-Key`. В `.env.example` кэш и очередь переключены на `redis`. В свой `.env` пользователь поставил `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `CACHE_PREFIX=tst_` и выполнил `docker compose restart app`.
+- После просмотра заказа `1` ключ нашёлся так: `docker compose exec -T redis redis-cli -n 1 --scan --pattern '*orders:*:status'`. Имя: `laravel-database-tst_orders:1:status`. Первый прогон скана был пустым, до запроса в API. Позже `TTL` этого ключа вернул `-2`: 60 секунд уже прошли, ключ удалён. После нового просмотра заказа `1` тот же `TTL` показал 56, затем 48 и 46. Два `POST /api/orders` с `Idempotency-Key: demo-1` вернули один заказ `5003`: сначала `201`, повтор `200`. Ключ статуса этого заказа: `laravel-database-tst_orders:5003:status`, `TTL` 22. Следующие `POST` упёрлись в лимит: `429`, `Too Many Attempts.`, `ThrottleRequestsException`. Job после оплаты ещё не создавали. Через 10 минут повтор с `Idempotency-Key: demo-1` создал новый заказ `5005`.
+
+## 2026-11-10 16:30
+
+- Кэш статуса раньше только писался в Redis, а `GET` отвечал из Postgres. Теперь `show` пишет результат `Cache::remember` в атрибут `status` перед ресурсом. `PATCH` по-прежнему перезаписывает ключ. Воркеры ещё не перезапускали.
+- Содержимое ключа смотреть так: `docker compose exec -T redis redis-cli -n 1 GET "laravel-database-tst_orders:5005:status"`. Строка в Redis сериализована PHP, число id заказа в ключе идемпотентности лежит как есть.
+
+## 2026-11-10 17:30
+
+- `docker compose exec -T redis redis-cli -n 1 GET "laravel-database-tst_orders:5002:status"`. Первый раз ключа не было. После просмотра заказа значение `s:5:"draft";`. После смены статуса `s:16:"awaiting_payment";`.
 
 

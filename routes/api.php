@@ -9,5 +9,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    Route::apiResource('orders', OrderController::class)->except(['destroy']);
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:orders');
+    Route::apiResource('orders', OrderController::class)->except(['store', 'destroy']);
 });

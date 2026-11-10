@@ -4,7 +4,7 @@
 
 ## Где мы
 
-Остановка 2026-11-10. Индекс `(status, created_at)` стоит. План стал `Bitmap Index Scan` плюс чтение кучи и отдельная сортировка. Дальше Redis: кэш статуса, throttle, идемпотентность и один job.
+Остановка 2026-11-10. Индекс оставлен. Дальше Redis: в коде кэш статуса на 60 секунд, throttle 5 созданий в минуту и идемпотентность заголовком `Idempotency-Key`. В `.env` нужно переключить `CACHE_STORE=redis` и `QUEUE_CONNECTION=redis`, затем перезапустить `app`. Job ещё не создавали.
 
 Сделано: Docker-стек, Laravel 13, Octane/Swoole на порту `8000`, Sanctum, MCP Postgres (профиль `orders`, база `test_laravel`), модели `Order` и `OrderLine`, состояния Spatie, Policy владельца, сидер Anna и Andrey. Токен для Postman выпускается через `tinker`, отдельного маршрута входа нет. В `.env.example` есть `OCTANE_SERVER=swoole` и `REFUNDS_ENABLED=false`. Команды в чате пишем как `docker compose exec`, не через Make. `octane:reload` не используем: один раз он убил мастер Swoole. Код подхватывает `docker compose restart app`.
 
